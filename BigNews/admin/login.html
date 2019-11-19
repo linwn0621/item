@@ -67,6 +67,8 @@
       var $password = $(".input_pass");
       const $btn = $(".input_sub");
 
+
+
       // 给登录按钮注册点击事件
       $btn.on("click", function (e) {
         // 获取用户名密码
@@ -96,13 +98,17 @@
             // 引入bootstrap模态框
             $('#myModal').modal();
             $('.modal-body').text(res.msg);
-
-            $('#myModal').on('hidden.bs.modal', function (e) {
-              if (res.code == 200) {
+            console.log(res);
+            if (res.code == 200) {
+              // 模态框隐藏时触发事件
+              localStorage.setItem("token", res.token);
+              $('#myModal').on('hidden.bs.modal', function (e) {
+                // 跳转页面
                 window.location.href = './index.html';
-              }
+                // 本地保存token
 
-            })
+              })
+            }
 
 
 
