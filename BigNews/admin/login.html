@@ -100,12 +100,14 @@
             $('.modal-body').text(res.msg);
             console.log(res);
             if (res.code == 200) {
-              // 模态框隐藏时触发事件
+
+              // 本地保存token
               localStorage.setItem("token", res.token);
+              // 模态框隐藏时触发事件
               $('#myModal').on('hidden.bs.modal', function (e) {
                 // 跳转页面
                 window.location.href = './index.html';
-                // 本地保存token
+
 
               })
             }
