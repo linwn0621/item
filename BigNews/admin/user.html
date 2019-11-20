@@ -70,11 +70,13 @@
     </div>
     <script>
         $(function () {
+            // 获取用户信息
             $.get({
                 url: "http://localhost:8080/api/v1/admin/user/detail",
                 success: function (res) {
                     // console.log(res);
                     if (res.code == 200) {
+                        // 将获取的信息赋值
                         // $("#inputEmail1").val(res.data.username);
                         // $("#inputEmail2").val(res.data.nickname);
                         // $("#inputEmail3").val(res.data.email);

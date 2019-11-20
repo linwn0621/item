@@ -106,6 +106,8 @@
 
                 })
 
+
+
             // 给工具栏添加点击高亮
             $(".level01").on("click", function () {
                 $(this).addClass("active").siblings().removeClass("active");
@@ -113,6 +115,7 @@
 
                 if ($(this).index() == 1) {
                     $("ul.level02").toggle();
+                    
                     $(".level02 li").eq(0).trigger("click");
                     // 让箭头转向
                     $(this).find("b").toggleClass("rotate0");
