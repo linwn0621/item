@@ -120,37 +120,41 @@
                             //    刷新子页面
                             // window.location.reload();
                             //  parent.window.location.reload();
-                            $.ajax({
-                                type: 'get',
-                                url: "http://localhost:8080/api/v1/admin/user/info",
-                                success: function (res) {
-                                    //获取到返回的用户信息，在页面渲染
-                                    // parent在子页面获取到父页面的元素
-                                    parent.$('.user_info>img').attr('src', res
-                                        .data.userPic);
-                                    parent.$('.user_info>span').html(
-                                        '欢迎&nbsp;&nbsp;' + res.data.nickname
-                                    );
-                                    parent.$('.user_center_link>img').attr(
-                                        'src', res.data.userPic)
 
-                                    //刷新子页面
-                                    window.location.reload();
+                            $.get({
+                                url: "http://localhost:8080/api/v1/admin/user/info",
+                                // 添加请求头
+                                headers: {
+                                    Authorization: window.localStorage.getItem(
+                                        "token")
+                                },
+                                success: function (res) {
+                                    console.log(res);
+                                    parent.$(".user_info>img").attr("src", res
+                                        .data.userPic);
+                                    parent.$(".user_info>span").text( res
+                                        .data.nickname);
+                                    parent.$(".user_center_link>img").attr(
+                                        "src", res.data.userPic);
+
+
                                 }
                             })
+
+                            window.location.reload();
                         }
                     }
 
                 })
 
-                window.localStorage.removeItem("token");
-                parent.window.location.href = "./login.html";
+                // window.localStorage.removeItem("token");
+                // parent.window.location.href = "./login.html";
 
             })
 
 
 
-    
+
 
 
 
