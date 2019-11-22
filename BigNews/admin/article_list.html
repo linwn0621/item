@@ -13,6 +13,17 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
+
+
+    <!-- <script src="script/lib/jquery.min.js"></script> -->
+    <script src="script/jquery.pagination.js"></script>
+    <!-- <link rel="stylesheet" href="style/common.css"> -->
+    <link rel="stylesheet" href="style/pagination.css">
+    <style>
+        .M-box {
+            display: inline-block;
+        }
+    </style>
 </head>
 
 <body>
@@ -26,10 +37,7 @@
                     <form class="form-inline">
                         <select id="selCategory" name="" class="form-control input-sm">
                             <option value="">所有分类</option>
-                            <option>未分类</option>
-                            <option>奇趣事</option>
-                            <option>会生活</option>
-                            <option>爱旅行</option>
+
                         </select>
                         <select id="selStatus" name="" class="form-control input-sm">
                             <option value="">所有状态</option>
@@ -54,8 +62,8 @@
                         <th class="text-center" width="100">操作</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
+                <tbody id="wzlb">
+                    <!-- <tr>
                         <td>王积千造统最头</td>
                         <td>杰克</td>
                         <td>奇趣事</td>
@@ -65,13 +73,191 @@
                             <a href="article_edit.html" class="btn btn-default btn-xs">编辑</a>
                             <a href="javascript:void(0);" class="btn btn-danger btn-xs delete">删除</a>
                         </td>
-                    </tr>
+                    </tr> -->
                 </tbody>
             </table>
             <div class="row text-center">
+                <div class="M-box "></div>
             </div>
+
         </div>
-    </div>
+
+        <script type="text/html" id="wzflList">
+            <option value="">所有分类</option>
+            {{each data}}
+
+            <option value="{{$value.id}}">{{$value.name}}</option>
+
+
+            {{/each}}
+        </script>
+        <script type="text/html" id="wzlbList">
+            {{each data.data }}
+
+            <tr>
+                <td>{{$value.title}}</td>
+                <td>{{$value.author}}</td>
+                <td>{{$value.category}}</td>
+                <td class="text-center">{{$value.date}}</td>
+                <td class="text-center">{{$value.state}}</td>
+                <td class="text-center">
+                    <a href="article_edit.html" id="{{$value.id}}" class="btn btn-default btn-xs">编辑</a>
+                    <a href="javascript:void(0);" id="{{$value.id}}" class="btn btn-danger btn-xs delete">删除</a>
+                </td>
+            </tr>
+
+
+            {{/each}}
+        </script>
+
+        <script>
+            var mypage = 1;
+            // 获取类别用模板引擎映射
+            $.get({
+                url: "http://localhost:8080/api/v1/admin/category/list",
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 200) {
+                        var htmlStr = template("wzflList", res);
+                        // console.log(htmlStr);
+                        $("#selCategory").html(htmlStr);
+                    }
+                }
+            })
+
+            // 获取文章列表
+            $.get({
+                url: "http://localhost:8080/api/v1/admin/article/query",
+                data: {
+
+                },
+                success: function (res) {
+                    console.log(res.data.totalPage);
+                    var htmlStr1 = template("wzlbList", res);
+                    // console.log(htmlStr1);
+                    if (res.code == 200) {
+                        $("#wzlb").html(htmlStr1);
+                        // 引入分页
+                        $('.M-box').pagination({
+                            pageCount: res.data.totalPage,
+                            jump: true,
+                            coping: true,
+                            homePage: '首页',
+                            endPage: '末页',
+                            prevContent: '上页',
+                            nextContent: '下页',
+                            // 获取点击的页面数值并发送ajax请求获取信息
+                            callback: function (api) {
+                                $.get({
+                                    url: "http://localhost:8080/api/v1/admin/article/query",
+                                    data: {
+                                        // 传入获取的页面数值
+                                        page: api.getCurrent()
+                                    },
+                                    success: function (res) {
+                                        var htmlStr1 = template("wzlbList", res);
+                                        // console.log(res);
+                                        if (res.code == 200) {
+                                            $("#wzlb").html(htmlStr1);
+                                        }
+                                    }
+                                })
+                                mypage = api.getCurrent();
+                            }
+                        });
+
+
+                    }
+                }
+            })
+
+            // 点击筛选按钮根据id获取文章列表
+            $("#btnSearch").on("click", function (e) {
+                // 需要禁用按钮在表单中会自动跳转
+                e.preventDefault();
+                // 获取文章分类id
+                var typeId = $("#selCategory").val();
+                $.get({
+                    url: "http://localhost:8080/api/v1/admin/article/query",
+                    data: {
+                        type: typeId,
+                        state: $("#selStatus").val()
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        var htmlStr1 = template("wzlbList", res);
+                        // console.log(htmlStr1);
+                        if (res.code == 200) {
+                            $("#wzlb").html(htmlStr1);
+                            $('.M-box').pagination({
+                                pageCount: res.data.totalPage,
+                                jump: true,
+                                coping: true,
+                                homePage: '首页',
+                                endPage: '末页',
+                                prevContent: '上页',
+                                nextContent: '下页',
+                                callback: function (api) {
+                                    currentPage: api.getCurrent();
+                                    $.get({
+                                        url: "http://localhost:8080/api/v1/admin/article/query",
+                                        data: {
+                                            // 传入获取的页面数值
+                                            type: typeId,
+                                            state: $("#selStatus").val(),
+                                            page: api.getCurrent()
+
+                                        },
+                                        success: function (res) {
+                                            var htmlStr1 = template("wzlbList",
+                                                res);
+                                            // console.log(res);
+                                            if (res.code == 200) {
+                                                $("#wzlb").html(htmlStr1);
+                                            }
+                                        }
+                                    })
+                                }
+                            });
+
+                        }
+                    }
+                })
+            })
+
+
+            $("#wzlb").on("click", ".delete", function () {
+                // console.log($(this).attr("id"));
+                $.post({
+                    url: "http://localhost:8080/api/v1/admin/article/delete",
+                    data: {
+                        id: $(this).attr("id")
+                    },
+                    success: function (res) {
+                        
+                        console.log(res);
+                        if (res.code == 204) {
+                            $.get({
+                                url: "http://localhost:8080/api/v1/admin/article/query",
+                                data: {
+                                    type: $("#selCategory").val(),
+                                    state: $("#selStatus").val(),
+                                    page: mypage
+                                },
+                                success: function (res) {
+                                    console.log(res.data.totalPage);
+                                    var htmlStr1 = template("wzlbList", res);
+                                    // console.log(htmlStr1);
+                                    if (res.code == 200) {
+                                        $("#wzlb").html(htmlStr1);
+                                    }
+                                }
+                            })
+                        }
+                    }
+                })
+            })
+        </script>
 </body>
 
 </html>
