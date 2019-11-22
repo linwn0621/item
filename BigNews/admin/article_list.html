@@ -14,10 +14,9 @@
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
 
-
+    <!-- 引入分页文件 -->
     <!-- <script src="script/lib/jquery.min.js"></script> -->
     <script src="script/jquery.pagination.js"></script>
-    <!-- <link rel="stylesheet" href="style/common.css"> -->
     <link rel="stylesheet" href="style/pagination.css">
     <style>
         .M-box {
@@ -77,6 +76,7 @@
                 </tbody>
             </table>
             <div class="row text-center">
+                <!-- 分页 -->
                 <div class="M-box "></div>
             </div>
 
@@ -111,19 +111,19 @@
         </script>
 
         <script>
-            var mypage = 1;
             // 获取类别用模板引擎映射
             $.get({
                 url: "http://localhost:8080/api/v1/admin/category/list",
                 success: function (res) {
-                    console.log(res);
+                    // console.log(res);
                     if (res.code == 200) {
                         var htmlStr = template("wzflList", res);
                         // console.log(htmlStr);
                         $("#selCategory").html(htmlStr);
                     }
                 }
-            })
+            });
+            var mypage;
 
             // 获取文章列表
             $.get({
@@ -132,7 +132,7 @@
 
                 },
                 success: function (res) {
-                    console.log(res.data.totalPage);
+                    // console.log(res.data.totalPage);
                     var htmlStr1 = template("wzlbList", res);
                     // console.log(htmlStr1);
                     if (res.code == 200) {
@@ -148,11 +148,12 @@
                             nextContent: '下页',
                             // 获取点击的页面数值并发送ajax请求获取信息
                             callback: function (api) {
+                                mypage = api.getCurrent();
                                 $.get({
                                     url: "http://localhost:8080/api/v1/admin/article/query",
                                     data: {
                                         // 传入获取的页面数值
-                                        page: api.getCurrent()
+                                        page: mypage
                                     },
                                     success: function (res) {
                                         var htmlStr1 = template("wzlbList", res);
@@ -162,7 +163,7 @@
                                         }
                                     }
                                 })
-                                mypage = api.getCurrent();
+                                console.log(mypage)
                             }
                         });
 
@@ -173,18 +174,21 @@
 
             // 点击筛选按钮根据id获取文章列表
             $("#btnSearch").on("click", function (e) {
+
                 // 需要禁用按钮在表单中会自动跳转
                 e.preventDefault();
-                // 获取文章分类id
-                var typeId = $("#selCategory").val();
+
+
                 $.get({
                     url: "http://localhost:8080/api/v1/admin/article/query",
                     data: {
-                        type: typeId,
-                        state: $("#selStatus").val()
+                        type: $("#selCategory").val(),
+                        state: $("#selStatus").val(),
+                        page: 1
+
                     },
                     success: function (res) {
-                        console.log(res);
+                        // console.log(res);
                         var htmlStr1 = template("wzlbList", res);
                         // console.log(htmlStr1);
                         if (res.code == 200) {
@@ -198,18 +202,21 @@
                                 prevContent: '上页',
                                 nextContent: '下页',
                                 callback: function (api) {
-                                    currentPage: api.getCurrent();
+                                    mypage = api.getCurrent();
+                                    console.log(mypage);
                                     $.get({
                                         url: "http://localhost:8080/api/v1/admin/article/query",
                                         data: {
                                             // 传入获取的页面数值
-                                            type: typeId,
+                                            type: $("#selCategory").val(),
                                             state: $("#selStatus").val(),
-                                            page: api.getCurrent()
+                                            page: mypage
 
                                         },
                                         success: function (res) {
-                                            var htmlStr1 = template("wzlbList",
+
+                                            var htmlStr1 = template(
+                                                "wzlbList",
                                                 res);
                                             // console.log(res);
                                             if (res.code == 200) {
@@ -217,8 +224,10 @@
                                             }
                                         }
                                     })
-                                }
+                                },
+
                             });
+                            // console.log(mypage)
 
                         }
                     }
@@ -228,15 +237,17 @@
 
             $("#wzlb").on("click", ".delete", function () {
                 // console.log($(this).attr("id"));
+                console.log(mypage);
                 $.post({
                     url: "http://localhost:8080/api/v1/admin/article/delete",
                     data: {
                         id: $(this).attr("id")
                     },
                     success: function (res) {
-                        
-                        console.log(res);
+
+                        // console.log(res);
                         if (res.code == 204) {
+
                             $.get({
                                 url: "http://localhost:8080/api/v1/admin/article/query",
                                 data: {
@@ -245,11 +256,13 @@
                                     page: mypage
                                 },
                                 success: function (res) {
-                                    console.log(res.data.totalPage);
+
+                                    // console.log(res.data.totalPage);
                                     var htmlStr1 = template("wzlbList", res);
                                     // console.log(htmlStr1);
                                     if (res.code == 200) {
                                         $("#wzlb").html(htmlStr1);
+
                                     }
                                 }
                             })
