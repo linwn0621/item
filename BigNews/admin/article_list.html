@@ -101,8 +101,7 @@
                 <td class="text-center">{{$value.date}}</td>
                 <td class="text-center">{{$value.state}}</td>
                 <td class="text-center">
-                    <a href="article_edit.html?id={{$value.id}}" 
-                        class="btn btn-default btn-xs">编辑</a>
+                    <a href="article_edit.html?id={{$value.id}}" class="btn btn-default btn-xs">编辑</a>
                     <a href="javascript:void(0);" id="{{$value.id}}" class="btn btn-danger btn-xs delete">删除</a>
                 </td>
             </tr>
@@ -270,6 +269,11 @@
                         }
                     }
                 })
+
+            })
+            $("#release_btn").on("click", function () {
+                parent.$("#tz").trigger("click");
+            
             })
         </script>
 </body>

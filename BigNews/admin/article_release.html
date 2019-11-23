@@ -14,19 +14,25 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
+    <!-- 时间插件 -->
+    <script src="./libs/jedate/js/jedate.js"></script>
+    <link rel="stylesheet" href="./libs/jedate/css/jeDate-test.css">
+    <link rel="stylesheet" href="./libs/jedate/css/jedate.css">
+    <!-- 富文本编辑器 -->
+    <script src="./libs/wangEditor.min.js"></script>
 </head>
 
 <body>
     <div class="container-fluid">
         <div class="common_title">
-            文章编辑
+            文章发表
         </div>
         <div class="container-fluid common_con">
             <form class="form-horizontal article_form" id="form">
                 <div class="form-group">
                     <label for="inputTitle" class="col-sm-2 control-label">文章标题：</label>
-                    <div class="col-sm-10">
-                        <input type="text" name="title" class="form-control title" id="inputTitle" value="文章标题文字">
+                    <div class="col-sm-6">
+                        <input type="text" name="title" class="form-control title" id="inputTitle" placeholder="文章标题文字">
                     </div>
                 </div>
                 <div class="form-group">
@@ -38,25 +44,32 @@
                 </div>
                 <div class="form-group">
                     <label for="inputCategory" class="col-sm-2 control-label">文章类别：</label>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         <select class="form-control category" name="categoryId">
-                            <option>类别一</option>
+                            <!-- <option>类别一</option>
                             <option>类别二</option>
                             <option>类别三</option>
                             <option selected>类别四</option>
-                            <option>类别五</option>
+                            <option>类别五</option> -->
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
-                    <div class="col-sm-4">
+
+                    <div class="jeinpbox col-sm-3"><input type="text" name="date" class="jeinput" id="test03"
+                            placeholder="YYYY-MM-DD">
+
                     </div>
+
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
+
+                    <div id="editor" class="col-sm-8">
+                        <p>请输入~</p>
                     </div>
+
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
@@ -67,6 +80,80 @@
             </form>
         </div>
     </div>
+    <script type="text/html" id="fblist">
+        {{each data}}
+        <option value="{{$value.id}}">{{$value.name}}</option>
+        {{/each}}
+    </script>
+    <script>
+        $(function () {
+            // 图片上传可视化
+            $("#inputCover").on("change", function () {
+                console.dir(this);
+                var url = URL.createObjectURL(this.files[0]);
+                $(".article_cover").attr("src", url);
+            })
+
+
+            // 获取文章类别
+            $.get({
+                url: "http://localhost:8080/api/v1/admin/category/list",
+                success: function (res) {
+                    // console.log(res);
+                    var htmlStr = template("fblist", res);
+                    // console.log(htmlStr);
+                    $(".category").html(htmlStr);
+                }
+            })
+
+
+            // 添加时间插件
+            jeDate("#test03", {
+                zIndex: 99999,
+                format: "YYYY-MM-DD",
+
+                theme: {
+                    bgcolor: "#3a385f",
+                    pnColor: "#fad000"
+                },
+
+
+            })
+
+
+            // 添加富文本框
+            var E = window.wangEditor
+            var editor = new E('#editor')
+            // 或者 var editor = new E( document.getElementById('editor') )
+            editor.create()
+
+            //  发布文章
+            $(".btn-release").on("click", function (e) {
+                e.preventDefault();
+                var form = $("#form")[0];
+                var fd = new FormData(form);
+                fd.append("content", editor.txt.html());
+                fd.append("state", "已发布");
+                // debugger;
+                if (confirm("是否修改")) {
+                    $.post({
+                        url: "http://localhost:8080/api/v1/admin/article/publish",
+                        data: fd,
+                        contentType: false,
+                        processData: false,
+                        success: function (res) {
+                            console.log(res);
+                            // if(res.code)
+                            window.location.href = './article_list.html';
+                        }
+
+
+                    })
+                }
+
+            })
+        })
+    </script>
 </body>
 
 </html>
